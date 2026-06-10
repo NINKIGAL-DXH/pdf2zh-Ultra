@@ -1176,17 +1176,14 @@ import sys
 def patch_pdfinterp():
     try:
         import pdf2zh.pdfinterp
-        original_do_SCN = getattr(pdf2zh.pdfinterp.PDFPageInterpreterEx, 'do_SCN', None)
-        if original_do_SCN:
-            def patched_do_SCN(self, *args, **kwargs):
-                if not hasattr(self, 'scs'):
-                    self.scs = getattr(self, 'cs', None)
-                if not hasattr(self, 'ncs'):
-                    self.ncs = getattr(self, 'cs', None)
-                if not hasattr(self, 'cs'):
-                    self.cs = None
-                return original_do_SCN(self, *args, **kwargs)
-            pdf2zh.pdfinterp.PDFPageInterpreterEx.do_SCN = patched_do_SCN
+        original_execute = getattr(pdf2zh.pdfinterp.PDFPageInterpreterEx, 'execute', None)
+        if original_execute:
+            def patched_execute(self, *args, **kwargs):
+                if not hasattr(self, 'cs'): self.cs = None
+                if not hasattr(self, 'ncs'): self.ncs = getattr(self.graphicstate, 'ncs', None) if hasattr(self, 'graphicstate') else None
+                if not hasattr(self, 'scs'): self.scs = getattr(self.graphicstate, 'scs', None) if hasattr(self, 'graphicstate') else None
+                return original_execute(self, *args, **kwargs)
+            pdf2zh.pdfinterp.PDFPageInterpreterEx.execute = patched_execute
     except Exception as e:
         pass
 

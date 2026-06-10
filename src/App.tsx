@@ -140,10 +140,7 @@ export default function App() {
   const [glossaryImportLog, setGlossaryImportLog] = useState<string | null>(null);
 
   // Smart Diagnostics States
-  const [showDiagnostics, setShowDiagnostics] = useState(false);
-  const [diagnosticsLogs, setDiagnosticsLogs] = useState<Array<{ step: string; status: "pending" | "running" | "success" | "warning" | "failed"; detail: string }>>([]);
-  const [diagnosticsFixStatus, setDiagnosticsFixStatus] = useState<"idle" | "running" | "success" | "failed">("idle");
-
+      
   // Breakpoint resume state simulator
   const [pausedPage, setPausedPage] = useState<number | null>(null);
   const [canResume, setCanResume] = useState(false);
@@ -797,7 +794,7 @@ export default function App() {
                           const dummyDoc: TranslatedDoc = {
                             id: "doc_native_" + Date.now(),
                             fileName: selectedFile?.name || "translated.pdf",
-                            fileSize: selectedFile?.size ? `${(selectedFile.size / 1024 / 1024).toFixed(2)} MB` : "Unknown",
+                            fileSize: selectedFile?.size ? selectedFile.size : "Unknown",
                             pageCount: 1,
                             translatedAt: new Date().toLocaleString(),
                             params: { ...params },
@@ -1255,12 +1252,13 @@ export default function App() {
             {/* Sidebar Title */}
             <div className="px-2 mb-6">
               <div className="flex items-center space-x-2">
-                <div className="p-1.5 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg shadow text-white">
-                  <Languages className="w-4 h-4" />
+                <div className="p-1.5 rounded-lg shadow bg-black/20 text-white overflow-hidden shrink-0">
+                  <img src="/icon.png" alt="PDF2ZH Ultra" className="w-5 h-5 object-cover rounded-md" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextElementSibling?.classList.remove('hidden'); }} />
+                  <Languages className="w-5 h-5 hidden" />
                 </div>
                 <div>
-                  <h1 className="text-xs font-bold tracking-wider text-white uppercase font-display">
-                    pdf2zh client
+                  <h1 className="text-[13px] font-bold tracking-wider text-white uppercase font-display">
+                    PDF2ZH Ultra
                   </h1>
                   <span className="text-[9px] text-slate-400 block font-mono">
                     macOS Layout Preserving PDF Translator
@@ -1352,35 +1350,9 @@ export default function App() {
                 }`}
               >
                 <Info className="w-4 h-4" />
-                <span>CLI Quick Install (本地设置指引)</span>
+                <span>About (关于及致谢)</span>
               </button>
             </nav>
-
-            {/* Portable Runtime Setup Status Card */}
-            <div className="mt-4 p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-[10px]" id="portable-runtime-card">
-              <div className="flex items-center space-x-1 text-slate-200 font-mono text-[9px] uppercase tracking-wider font-semibold">
-                <Cpu className="w-3.5 h-3.5 text-blue-400" />
-                <span>Embedded Runtime / 独立运行时</span>
-              </div>
-              <div className="mt-1.5 space-y-1 text-slate-400">
-                <div className="flex justify-between">
-                  <span>Python Venv</span>
-                  <span className="font-mono text-blue-300">v3.12 (内置独立)</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Dependencies</span>
-                  <span className="text-emerald-400">Isolated 🟢</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>U-disk Mode</span>
-                  <span className="text-purple-300">真·便携版就绪</span>
-                </div>
-              </div>
-              <div className="mt-1.5 pt-1.5 border-t border-white/5 text-[9px] text-slate-500 flex justify-between items-center">
-                <span>电脑无需Python · 系统零污染</span>
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              </div>
-            </div>
           </div>
 
           {/* Sidebar Footer detailing Active Engine Model */}
@@ -1412,7 +1384,7 @@ export default function App() {
                 {activeTab === "glossary" && "Bilingual Terminology Subject Library (行业及专业学科术语库)"}
                 {activeTab === "history" && "Translated Archives & Side-by-Side Reader (双语版式校对历史)"}
                 {activeTab === "cli" && "CLI CommandLine Generator (pdf2zh 翻译命令速成)"}
-                {activeTab === "guide" && "macOS Command Line Quick Install (本地 pdf2zh 部署指南)"}
+                {activeTab === "guide" && "关于系统 (About & Credits)"}
               </h2>
               <p className="text-[11px] text-slate-400 mt-0.5">
                 {activeTab === "translate" && "Drag academic papers or booklets to inspect translated templates instantly."}
@@ -1421,7 +1393,7 @@ export default function App() {
                 {activeTab === "glossary" && "Import custom CSV/TXT glossaries or use built-in terminology databases for computer science, medical and law."}
                 {activeTab === "history" && "Double click documents to inspect absolute alignments in real HTML schemas."}
                 {activeTab === "cli" && "Instantly render a matching shell command based on your toggle states."}
-                {activeTab === "guide" && "Step-by-step instructions to get python pdf2zh tool working on your Terminal."}
+                {activeTab === "guide" && "Get to know the developer, the copilot engine, and open-source roots of this app."}
               </p>
             </div>
 
@@ -1591,31 +1563,6 @@ export default function App() {
                               <Sliders className="w-4 h-4 text-blue-400" />
                               <span>Translation & Layout Parameters (排版与运行控制)</span>
                             </h3>
-
-                            {/* Self-check Diagnostics button */}
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setDiagnosticsLogs([
-                                  { step: "Python Env Check", status: "success", detail: "Embedded Python 3.12 active & isolated in portable directory." },
-                                  { step: "Dependencies Audit", status: "success", detail: "PyMuPDF, PyPDF, and onnxruntime are fully loaded." },
-                                  { step: "Network Connectivity", status: "running", detail: "Testing active model API connection endpoints..." },
-                                  { step: "OCR Parser Check", status: "pending", detail: "Verifying RapidOCR layout mapping models..." }
-                                ]);
-                                setShowDiagnostics(true);
-                                // run connection check simulation
-                                setTimeout(() => {
-                                  setDiagnosticsLogs(prev => prev.map((item, idx) => {
-                                    if (idx === 2) return { ...item, status: "success", detail: `Endpoint verified: ${providers[selectedProviderIdx].endpoint || "Injected Cloud"}` };
-                                    if (idx === 3) return { ...item, status: "success", detail: "RapidOCR model engine integrity verified. Status code: 0" };
-                                    return item;
-                                  }));
-                                }, 1200);
-                              }}
-                              className="text-[10px] text-blue-400 font-semibold hover:text-blue-300 transition flex items-center gap-1 bg-blue-500/15 border border-blue-500/20 px-2 py-0.5 rounded-full"
-                            >
-                              <span>智能自诊 & 故障自动修复</span>
-                            </button>
                           </div>
 
                           {/* Grid 1: Basic Setup */}
@@ -2778,561 +2725,115 @@ FLAGS EXPLAINED:
                 </motion.div>
               )}
 
-              {/* TAB 5: CLI Quick Install Guide */}
+              {/* TAB 5: Introduction / About */}
               {activeTab === "guide" && (
                 <motion.div
                   key="guide"
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
-                  className="space-y-6 w-full"
-                  id="tab-guide"
+                  exit={{ opacity: 0, scale: 0.98 }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-6 pb-20"
                 >
-                  <div className="bg-white/5 border border-white/5 rounded-xl p-6 shadow-lg space-y-6" id="guide-install-flow">
-                    {/* macOS Gatekeeper Warning Guard */}
-                    <div className="bg-amber-950/20 border border-amber-500/30 rounded-xl p-5 space-y-3.5 shadow-md" id="macos-warning-box">
-                      <div className="flex items-center space-x-2 text-amber-400 font-semibold text-sm">
-                        <AlertTriangle className="w-5 h-5 animate-pulse shrink-0" />
-                        <span>macOS 桌面客户端警告：“已损坏，无法打开”的解决方案</span>
-                      </div>
-                      <div className="text-xs text-slate-300 leading-relaxed space-y-2">
-                        <p>
-                          当您双击打开下载安装的 macOS 桌面客户端时，系统可能会因为未购买苹果高昂的开发者证书而给出警告：
-                          <strong className="text-amber-300">「“PDF2ZH Layout Translator”已损坏，无法打开。您应该将它移到废纸篓。」</strong>
-                        </p>
-                        <p className="text-slate-400 text-[11px]">
-                          这是因苹果 Gatekeeper 安全机制对所有第三方未签名/自签名的开源分发包施加的默认网络隔离，并非程序实体损坏。只需一键复制并运行以下命令，即可移除隔离标志：
-                        </p>
-                        <div className="bg-white/5 border border-white/10 rounded-lg p-3 space-y-2 mt-1">
-                          <ol className="list-decimal list-inside space-y-1.5 text-slate-300 text-xs pl-1">
-                            <li>通过系统的 <span className="font-mono bg-black/40 px-1 py-0.5 rounded text-white text-[11px]">聚焦搜索</span> (Spotlight Cmd + Space) 或前往 <span className="text-slate-400">“应用程序 ➔ 实用工具”</span> 搜索打开 <span className="text-amber-200">“终端 (Terminal)”</span> 应用。</li>
-                            <li>
-                              复制并在终端中直接运行下方指令（运行后按回车，输入您的电脑开机密码并按回车即可。输入密码时屏幕不显示为系统保密机制，直接打完敲回车即可）：
-                            </li>
-                          </ol>
-                          <div className="flex items-center justify-between bg-black/50 border border-white/15 rounded px-3 py-2 font-mono text-xs text-amber-300 mt-2 break-all gap-2">
-                            <span className="select-all">sudo xattr -rd com.apple.quarantine "/Applications/PDF2ZH Layout Translator.app"</span>
-                            <button
-                              onClick={() => {
-                                navigator.clipboard.writeText('sudo xattr -rd com.apple.quarantine "/Applications/PDF2ZH Layout Translator.app"');
-                                setCommandCopied(true);
-                                setTimeout(() => setCommandCopied(false), 2000);
-                              }}
-                              className="px-2.5 py-1 bg-amber-600 hover:bg-amber-500 active:scale-95 text-white rounded text-[11px] font-sans flex items-center space-x-1 shrink-0 transition"
-                            >
-                              {commandCopied ? <Check className="w-3.5 h-3.5 text-emerald-300" /> : <Copy className="w-3.5 h-3.5" />}
-                              <span>{commandCopied ? "已复制！" : "一键复制"}</span>
-                            </button>
-                          </div>
+                  <div className="bg-[#1e2129]/80 backdrop-blur-xl border border-white/10 rounded-2xl p-8 relative overflow-hidden shadow-2xl">
+                    <div className="absolute -top-32 -right-32 w-64 h-64 bg-blue-500/20 rounded-full blur-[80px]"></div>
+                    <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-purple-500/20 rounded-full blur-[80px]"></div>
+                    
+                    <div className="relative z-10 flex flex-col items-center text-center space-y-6">
+                      <div className="relative">
+                        <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center relative shadow-xl ring-1 ring-white/20 p-0.5">
+                          <img src="/icon.png" alt="PDF2ZH Ultra Avatar" className="w-full h-full object-cover rounded-[14px]" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextElementSibling?.classList.remove('hidden'); }} />
+                          <span className="text-white font-bold text-3xl leading-none tracking-tighter hidden">UI</span>
+                        </div>
+                        <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-[#1e2129] rounded-full flex items-center justify-center border border-white/10 shadow-lg">
+                          <Sparkles className="w-4 h-4 text-blue-400" />
                         </div>
                       </div>
-                    </div>
 
-                    {/* Portable Standalone Zero-Friction Python 3.12 Independent Runtime Info Card */}
-                    <div className="bg-blue-950/15 border border-blue-500/20 rounded-xl p-5 space-y-3 shadow-md" id="portable-runtime-box">
-                      <div className="flex items-center space-x-2 text-blue-400 font-semibold text-sm">
-                        <svg className="w-5 h-5 animate-pulse shrink-0 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-                        <span>💼 真·便携版物理打包：Python 3.12 运行时 + 纯全依赖内置（零系统污染）</span>
-                      </div>
-                      <div className="text-xs text-slate-300 leading-relaxed space-y-2.5">
-                        <p>
-                          本项目遵循真正的 <strong className="text-blue-300">「零门槛便携」</strong> 工业设计标准。通过搭载智能的本地运行时路径探测引擎与
-                          <span className="text-blue-300 font-mono"> process.resourcesPath </span>
-                          重定向科技，应用在分发给您的打包成品（Windows/macOS DMG）中，已物理内置了一整套完整的极简 Python 3.12 运行时以及翻译核心库。
+                      <div className="space-y-2">
+                        <h3 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400 tracking-tight flex items-center justify-center">
+                          PDF2ZH Ultra
+                        </h3>
+                        <p className="text-sm tracking-wide text-slate-400 max-w-lg mx-auto leading-relaxed">
+                          The Ultimate High-Fidelity & Fully Configurable GUI Translation Environment.
                         </p>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 pt-1" id="portable-features-bento">
-                          <div className="bg-white/5 border border-white/5 p-3 rounded-lg space-y-1">
-                            <span className="text-blue-400 font-bold block text-[11px] font-mono">📦 100% 独立环境</span>
-                            <span className="text-slate-400 text-[10px] leading-snug block">
-                              不向宿主电脑写入任何系统 PATH 变量，不污染任何全局开发环境，随拷随走。
-                            </span>
-                          </div>
-                          <div className="bg-white/5 border border-white/5 p-3 rounded-lg space-y-1">
-                            <span className="text-blue-400 font-bold block text-[11px] font-mono">🔌 物理离线可用</span>
-                            <span className="text-slate-400 text-[10px] leading-snug block">
-                              预先打包好所有科学计算轮子 (wheels)，首开即已就绪，极其适合保密隔离电脑翻译。
-                            </span>
-                          </div>
-                          <div className="bg-white/5 border border-white/5 p-3 rounded-lg space-y-1">
-                            <span className="text-blue-400 font-bold block text-[11px] font-mono">⚡ 零秒闪电就绪</span>
-                            <span className="text-slate-400 text-[10px] leading-snug block">
-                              一键本地配置时会自动识别内置的 Python 物理包，0.1秒跳过拉取、直接亮绿灯可用。
-                            </span>
-                          </div>
-                        </div>
-                        <div className="bg-black/40 border border-white/5 rounded-lg p-3.5 space-y-2 mt-1.5 text-[11px]">
-                          <span className="text-[11px] text-slate-200 font-bold block">🛠️ 个人手动编译/打造绿色完全便携解压即用包（Windows & Mac 双架构）：</span>
-                          <p className="text-slate-400 leading-relaxed">
-                            若您想自己在本地离线构建极致绿色的独立便携环境，您只需在项目根目录创建 <code className="font-mono bg-black/40 px-1 py-0.5 rounded text-amber-200">runtime/</code> 文件夹，
-                            双击运行我们为您研发的高阻尼定制编译脚本，即可直接把轻量 Compact-Python 与全部特定科学包灌入该文件夹。
-                            Electron 随后在 package 打包时将 100% 静默全包含（您打包出的 DMG/EXE 一并含有 Python 运行时且换机毫无影响）：
-                          </p>
-                          <div className="flex items-center justify-between bg-[#111115] border border-white/10 rounded px-3 py-2 font-mono text-[10px] text-emerald-400 mt-2 break-all gap-2">
-                            <span className="select-all">mkdir -p runtime && curl -L "https://github.com/indygreg/python-build-standalone/releases/download/20240415/cpython-3.12.3%2B20240415-aarch64-apple-darwin-install_only.tar.gz" | tar -xzf - -C runtime --strip-components=1 && ./runtime/bin/python3 -m pip install spacy rapidocr-onnxruntime pdf2zh</span>
-                            <button
-                              onClick={() => {
-                                navigator.clipboard.writeText('mkdir -p runtime && curl -L "https://github.com/indygreg/python-build-standalone/releases/download/20240415/cpython-3.12.3%2B20240415-aarch64-apple-darwin-install_only.tar.gz" | tar -xzf - -C runtime --strip-components=1 && ./runtime/bin/python3 -m pip install spacy rapidocr-onnxruntime pdf2zh');
-                                setCommandCopied(true);
-                                setTimeout(() => setCommandCopied(false), 2000);
-                              }}
-                              className="px-2 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white rounded text-[10px] font-sans flex items-center space-x-0.5 shrink-0 transition py-1"
-                            >
-                              {commandCopied ? <Check className="w-3 h-3 text-emerald-200" /> : <Copy className="w-3 h-3" />}
-                              <span>{commandCopied ? "复制成功!" : "复制命令"}</span>
-                            </button>
-                          </div>
-                        </div>
                       </div>
-                    </div>
 
-                    <h3 className="text-sm font-semibold text-white font-display flex items-center justify-between border-b border-white/5 pb-2">
-                       <div className="flex items-center gap-1.5">
-                         <Terminal className="w-4 h-4 text-blue-400" />
-                         <span>How to install & Deploy pdf2zh on macOS Terminal (本地配置流程)</span>
-                       </div>
-                       
-                       <div className="flex items-center space-x-2">
-                         <button
-                           onClick={async () => {
-                               setIsSettingUpNative(true);
-                               setTerminalLogs([]);
-                               setCurrentProgressStep("parsing"); // use parsing panel just to show logs
-                               setActiveTab("translate"); // jump to translate to show logs
-                               
-                               let currentLogs: string[] = [];
-                               const pushLog = (txt: string) => {
-                                 currentLogs = [...currentLogs, `[${new Date().toLocaleTimeString()}] ${txt}`];
-                                 setTerminalLogs(currentLogs);
-                               };
-                               
-                               try {
-                                 setSetupProgressNum(0);
-                                 const response = await fetch("/api/pdf2zh-uninstall", { method: "POST" });
-                                 if (!response.body) throw new Error("No response");
-                                 const reader = response.body.getReader();
-                                 const decoder = new TextDecoder();
-                                 let doneState = false;
-                                 let buffer = "";
-                                 while (!doneState) {
-                                    const { value, done } = await reader.read();
-                                    doneState = done;
-                                    if (value) {
-                                      buffer += decoder.decode(value, { stream: true });
-                                      let processIdx = buffer.indexOf("\n\n");
-                                      while (processIdx !== -1) {
-                                        const line = buffer.substring(0, processIdx);
-                                        buffer = buffer.substring(processIdx + 2);
-                                        processIdx = buffer.indexOf("\n\n");
-                                        
-                                         if (line.startsWith("data: ")) {
-                                            try {
-                                              const payload = JSON.parse(line.replace("data: ", ""));
-                                              if (payload.type === "stdout" || payload.type === "info" || payload.type === "success") {
-                                                 pushLog(`[Cleanup] ${payload.message}`);
-                                              } else if (payload.type === "translation_progress") {
-     setTranslationProgress(payload.percentage);
-  } else if (payload.type === "model_progress") {
-     setModelDownloadProgress({ percentage: payload.percentage, eta: payload.eta, speed: payload.speed });
-  } else if (payload.type === "stderr" || payload.type === "warning") {
-                                                 pushLog(`[WARNING] ${payload.message}`);
-                                              } else if (payload.type === "error") {
-                                                 pushLog(`[FAILED] ${payload.message || payload.error}`);
-                                              } else if (payload.type === "done") {
-                                                 pushLog(`[SUCCESS] Cleanup and Uninstallation completed! Engine Switch set back to Sandbox.`);
-                                                 setExecuteMode("sandbox");
-                                              }
-                                            } catch(e) {}
-                                         }
-                                      }
-                                    }
-                                 }
-                               } catch (err: any) {
-                                  pushLog(`[CRASH] ${err.message}`);
-                               }
-                               setIsSettingUpNative(false);
-                           }}
-                           disabled={isSettingUpNative}
-                           className="flex items-center space-x-1 px-3 py-1 bg-rose-600/20 text-rose-400 hover:bg-rose-600 hover:text-white disabled:opacity-50 rounded text-xs tracking-wide cursor-pointer transition border border-rose-500/30"
-                         >
-                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                           <span>Clean Up (彻底卸载)</span>
-                         </button>
-
-                         <button
-                           onClick={async () => {
-                               setIsSettingUpNative(true);
-                               setSetupLogs([]);
-                               
-                               let currentLogs: string[] = [];
-                               const pushLog = (txt: string) => {
-                                 currentLogs = [...currentLogs, `[${new Date().toLocaleTimeString()}] ${txt}`];
-                                 setSetupLogs(currentLogs);
-                               };
-                               
-                               try {
-                                 setSetupProgressNum(0);
-                                 const response = await fetch("/api/pdf2zh-setup?forceReinstall=true", { method: "POST" });
-                                 if (!response.body) throw new Error("No response");
-                                 const reader = response.body.getReader();
-                                 const decoder = new TextDecoder();
-                                 let doneState = false;
-                                 let buffer = "";
-                                 while (!doneState) {
-                                    const { value, done } = await reader.read();
-                                    doneState = done;
-                                    if (value) {
-                                      buffer += decoder.decode(value, { stream: true });
-                                      let processIdx = buffer.indexOf("\n\n");
-                                      while (processIdx !== -1) {
-                                        const line = buffer.substring(0, processIdx);
-                                        buffer = buffer.substring(processIdx + 2);
-                                        processIdx = buffer.indexOf("\n\n");
-                                        
-                                         if (line.startsWith("data: ")) {
-                                            try {
-                                              const payload = JSON.parse(line.replace("data: ", ""));
-                                              if (payload.type === "progress") {
-                                                  setSetupProgressNum(payload.value);
-                                               } else if (payload.type === "model_progress") {
-                                                  setModelDownloadProgress({ percentage: payload.percentage, eta: payload.eta, speed: payload.speed });
-                                               } else if (payload.type === "stdout" || payload.type === "info" || payload.type === "success") {
-                                                 pushLog(`[Setup] ${payload.message}`);
-                                              } else if (payload.type === "translation_progress") {
-     setTranslationProgress(payload.percentage);
-  } else if (payload.type === "model_progress") {
-     setModelDownloadProgress({ percentage: payload.percentage, eta: payload.eta, speed: payload.speed });
-  } else if (payload.type === "stderr" || payload.type === "warning") {
-                                                 pushLog(`[WARNING] ${payload.message}`);
-                                              } else if (payload.type === "error") {
-                                                 pushLog(`[FAILED] ${payload.message || payload.error}`);
-                                              } else if (payload.type === "done") {
-                                                 pushLog(`[SUCCESS] Configuration completed! You can now toggle the Engine Switch above to Native.`);
-                                                 setExecuteMode("native");
-                                                  setModelDownloadProgress(null);
-                                               }
-                                             } catch(e) {}
-                                         }
-                                      }
-                                    }
-                                 }
-                               } catch (err: any) {
-                                  pushLog(`[CRASH] ${err.message}`);
-                               }
-                               setIsSettingUpNative(false);
-                           }}
-                           disabled={isSettingUpNative}
-                           className="flex items-center space-x-1 px-3 py-1 bg-white/10 hover:bg-white/20 text-white disabled:opacity-50 rounded text-xs tracking-wide cursor-pointer transition border border-white/20"
-                         >
-                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                           <span>Reinstall (检查并修复)</span>
-                         </button>
-
-                         <button
-                           onClick={async () => {
-                               setIsSettingUpNative(true);
-                               setSetupLogs([]);
-                               
-                               let currentLogs: string[] = [];
-                               const pushLog = (txt: string) => {
-                                 currentLogs = [...currentLogs, `[${new Date().toLocaleTimeString()}] ${txt}`];
-                                 setSetupLogs(currentLogs);
-                               };
-                               
-                               try {
-                                 setSetupProgressNum(0);
-                                 const response = await fetch("/api/pdf2zh-setup", { method: "POST" });
-                                 if (!response.body) throw new Error("No response");
-                                 const reader = response.body.getReader();
-                                 const decoder = new TextDecoder();
-                                 let doneState = false;
-                                 let buffer = "";
-                                 while (!doneState) {
-                                    const { value, done } = await reader.read();
-                                    doneState = done;
-                                    if (value) {
-                                      buffer += decoder.decode(value, { stream: true });
-                                      let processIdx = buffer.indexOf("\n\n");
-                                      while (processIdx !== -1) {
-                                        const line = buffer.substring(0, processIdx);
-                                        buffer = buffer.substring(processIdx + 2);
-                                        processIdx = buffer.indexOf("\n\n");
-                                        
-                                         if (line.startsWith("data: ")) {
-                                            try {
-                                              const payload = JSON.parse(line.replace("data: ", ""));
-                                              if (payload.type === "progress") {
-                                                  setSetupProgressNum(payload.value);
-                                               } else if (payload.type === "model_progress") {
-                                                  setModelDownloadProgress({ percentage: payload.percentage, eta: payload.eta, speed: payload.speed });
-                                               } else if (payload.type === "stdout" || payload.type === "info" || payload.type === "success") {
-                                                 pushLog(`[Setup] ${payload.message}`);
-                                              } else if (payload.type === "translation_progress") {
-     setTranslationProgress(payload.percentage);
-  } else if (payload.type === "model_progress") {
-     setModelDownloadProgress({ percentage: payload.percentage, eta: payload.eta, speed: payload.speed });
-  } else if (payload.type === "stderr" || payload.type === "warning") {
-                                                 pushLog(`[WARNING] ${payload.message}`);
-                                              } else if (payload.type === "error") {
-                                                 pushLog(`[FAILED] ${payload.message || payload.error}`);
-                                              } else if (payload.type === "done") {
-                                                 pushLog(`[SUCCESS] Configuration completed! You can now toggle the Engine Switch above to Native.`);
-                                                 setExecuteMode("native");
-                                                  setModelDownloadProgress(null);
-                                               }
-                                             } catch(e) {}
-                                         }
-                                      }
-                                    }
-                                 }
-                               } catch (err: any) {
-                                  pushLog(`[CRASH] ${err.message}`);
-                               }
-                               setIsSettingUpNative(false);
-                           }}
-                           disabled={isSettingUpNative}
-                           className="flex items-center space-x-1.5 px-3 py-1 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded text-xs tracking-wide cursor-pointer transition shadow-lg shadow-blue-500/20"
-                         >
-                           <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-                           <span>{isSettingUpNative ? "Processing..." : "1-Click Native Config (一键本地配置)"}</span>
-                         </button>
-                       </div>
-                    </h3>
-
-                    {(isSettingUpNative || setupProgressNum > 0 || setupLogs.length > 0) && (
-                       <div className="pt-2 pb-2">
-                         <div className="flex justify-between items-center mb-1.5 border-b border-transparent">
-                           <span className="text-xs font-medium text-slate-300">安装进度 (Installation Progress)</span>
-                           <span className="text-xs font-mono text-blue-400">{setupProgressNum}%</span>
-                         </div>
-                         <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden shadow-inner border border-white/10 mb-4">
-                           <div className="bg-blue-500 h-1.5 rounded-full transition-all duration-300 ease-out" style={{ width: `${setupProgressNum}%` }}></div>
-                         </div>
-                                                   {modelDownloadProgress && (
-                             <div className="mb-4 bg-purple-900/20 rounded p-2 border border-purple-500/20">
-                               <div className="flex justify-between items-center mb-1.5">
-                                 <div className="flex items-center space-x-2">
-                                    <svg className="w-3.5 h-3.5 text-purple-400 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                                    <span className="text-xs font-medium text-purple-300">模型下载 (Downloading Model)</span>
-                                 </div>
-                                 <span className="text-xs font-mono text-purple-400">{modelDownloadProgress.percentage}%</span>
-                               </div>
-                               <div className="flex justify-between text-[9px] font-mono text-purple-300/60 mb-1.5">
-                                 <span>Speed: {modelDownloadProgress.speed}</span>
-                                 <span>ETA: {modelDownloadProgress.eta}</span>
-                               </div>
-                               <div className="w-full bg-black/40 rounded-full h-1 overflow-hidden shadow-inner border border-white/5">
-                                 <div className="bg-purple-500 h-1 rounded-full transition-all duration-300 ease-out" style={{ width: `${Math.max(2, modelDownloadProgress.percentage)}%` }}></div>
-                               </div>
-                             </div>
-                          )}
-
-                          <div className="bg-black/50 border border-white/10 rounded overflow-hidden">
-                            <div className="flex items-center justify-between px-3 py-1.5 bg-white/5 border-b border-white/5">
-                              <span className="text-[10px] text-slate-400 font-mono tracking-wider">INSTALLATION_LOGS</span>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full mt-8 text-left">
+                        
+                        <div className="bg-black/20 border border-white/5 p-5 rounded-xl space-y-3 relative group overflow-hidden">
+                           <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                             <Languages className="w-12 h-12 text-blue-400" />
                            </div>
-                           <div className="h-40 overflow-y-auto p-2 font-mono text-[10px] leading-relaxed break-all flex flex-col space-y-1">
-                             {setupLogs.map((log, i) => (
-                               <div key={i} className={`${log.includes('[FAILED]') || log.includes('[CRASH]') || log.includes('[WARNING]') ? 'text-rose-400' : log.includes('[SUCCESS]') ? 'text-emerald-400' : 'text-slate-300'}`}>
-                                 {log}
-                               </div>
-                             ))}
+                           <h4 className="text-xs font-semibold text-slate-300 uppercase tracking-widest flex items-center">
+                             <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mr-2"></div>
+                             Developer / Modifier
+                           </h4>
+                           <p className="text-lg font-bold text-white tracking-wide">
+                             NINKIGALdxh
+                           </p>
+                           <p className="text-[10px] text-slate-400 leading-snug">
+                             Architected and styled this standalone, premium translation platform interface.
+                           </p>
+                        </div>
+                        
+                        <div className="bg-black/20 border border-white/5 p-5 rounded-xl space-y-3 relative group overflow-hidden">
+                           <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                             <Sparkles className="w-12 h-12 text-emerald-400" />
                            </div>
-                         </div>
-                       </div>
-                    )}
+                           <h4 className="text-xs font-semibold text-slate-300 uppercase tracking-widest flex items-center">
+                             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2"></div>
+                             Copilot Engine
+                           </h4>
+                           <p className="text-lg font-bold text-white tracking-wide">
+                             Google Gemini
+                           </p>
+                           <p className="text-[10px] text-slate-400 leading-snug">
+                             Accelerated through AI Copilot capabilities.
+                           </p>
+                        </div>
 
-                    <div className="space-y-4" id="guide-steps-checklist">
-                      <div className="flex items-start space-x-3.5">
-                        <div className="w-6 h-6 rounded-full bg-white/5 text-slate-200 text-xs font-bold font-mono flex items-center justify-center shrink-0 border border-white/10 shadow-sm mt-0.5">
-                          1
+                        <div className="bg-black/20 border border-white/5 p-5 rounded-xl space-y-3 relative group overflow-hidden lg:col-span-1 sm:col-span-2">
+                           <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                             <Layers className="w-12 h-12 text-purple-400" />
+                           </div>
+                           <h4 className="text-xs font-semibold text-slate-300 uppercase tracking-widest flex items-center">
+                             <div className="w-1.5 h-1.5 rounded-full bg-purple-500 mr-2"></div>
+                             Open Source DNA
+                           </h4>
+                           <a href="https://github.com/Byaidu/pdf2zh" target="_blank" rel="noreferrer" className="text-lg font-bold text-white tracking-wide hover:text-purple-300 transition-colors inline-block decoration-purple-500/30 underline underline-offset-4">
+                             Byaidu / pdf2zh
+                           </a>
+                           <p className="text-[10px] text-slate-400 leading-snug">
+                             Adapted and propelled by the extraordinary open-source layout-parser Python package. 
+                             Full credits to the core engine contributors.
+                           </p>
                         </div>
-                        <div>
-                          <h4 className="text-xs font-semibold text-white">
-                            Prerequisites: Python & Pip environment check (环境自检)
-                          </h4>
-                          <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                            Open your Terminal application (Finder ➔ Applications ➔ Utilities ➔ Terminal) and ensure you have Python 3 working on your macOS. Type:
-                          </p>
-                          <div className="bg-black/50 text-slate-300 font-mono text-xs p-2.5 rounded mt-2 border border-white/5">
-                            {`$ python3 --version
-$ pip3 --version`}
-                          </div>
-                        </div>
+
                       </div>
 
-                      <div className="flex items-start space-x-3.5">
-                        <div className="w-6 h-6 rounded-full bg-white/5 text-slate-200 text-xs font-bold font-mono flex items-center justify-center shrink-0 border border-white/10 shadow-sm mt-0.5">
-                          2
+                      <div className="pt-8 w-full border-t border-white/5 flex flex-col md:flex-row items-center justify-between text-xs gap-4">
+                        <div className="text-slate-500 flex items-center space-x-2">
+                           <span>Designed with precision</span>
+                           <span className="w-1 h-1 rounded-full bg-slate-700"></span>
+                           <span>Powered by AI</span>
                         </div>
-                        <div>
-                          <h4 className="text-xs font-semibold text-white">
-                            Install pdf2zh package utilizing pip (通过 pip 安装命令)
-                          </h4>
-                          <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                            Install the official open-source project securely from the python index databases:
-                          </p>
-                          <div className="bg-black/50 text-slate-300 font-mono text-xs p-2.5 rounded mt-2 border border-white/5">
-                            {`$ pip3 install pdf2zh`}
-                          </div>
-                        </div>
+                        <a href="https://github.com/Byaidu/pdf2zh" target="_blank" rel="noreferrer" className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-lg flex items-center transition-colors">
+                           <ExternalLink className="w-3.5 h-3.5 mr-2" />
+                           View Original Source Code
+                        </a>
                       </div>
 
-                      <div className="flex items-start space-x-3.5">
-                        <div className="w-6 h-6 rounded-full bg-white/5 text-slate-200 text-xs font-bold font-mono flex items-center justify-center shrink-0 border border-white/10 shadow-sm mt-0.5">
-                          3
-                        </div>
-                        <div>
-                          <h4 className="text-xs font-semibold text-white">
-                            Configure translation endpoints & launch (配置引擎开始翻译)
-                          </h4>
-                          <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                            Once installed, you can trigger layout-preserving translation natively. For instance, to translate using pre-configured local Ollama engines, type:
-                          </p>
-                          <div className="bg-black/50 text-slate-300 font-mono text-xs p-2.5 rounded mt-2 border border-white/5">
-                            {`$ pdf2zh document.pdf --service ollama --model llama3.2 --url "http://localhost:11434"`}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="pt-4 border-t border-white/5 flex items-center justify-between text-xs" id="pdf2zh-github-credits">
-                      <span className="text-slate-400">
-                        Open-Source Github repository credits: <strong>https://github.com/Byaidu/pdf2zh</strong>
-                      </span>
-                      <a 
-                        href="https://github.com/Byaidu/pdf2zh"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-blue-400 font-semibold flex items-center space-x-1 hover:underline cursor-pointer"
-                      >
-                        <span>Visit Repository</span>
-                        <ExternalLink className="w-3.5 h-3.5" />
-                      </a>
                     </div>
                   </div>
                 </motion.div>
               )}
-            </AnimatePresence>
+</AnimatePresence>
           </div>
         </div>
       </div>
 
-      {/* Embedded Intelligent Diagnostics & Auto-Healer Modal (故障自诊与自动修复弹窗) */}
-      <AnimatePresence>
-        {showDiagnostics && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-[#070708]/80 backdrop-blur-md flex items-center justify-center p-4"
-            id="diagnostics-modal-backdrop"
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 15 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="w-full max-w-md bg-[#16161a] border border-white/10 rounded-2xl p-6 shadow-2xl text-slate-200 relative overflow-hidden"
-              id="diagnostics-modal-box"
-            >
-              {/* Mesh Accent glow background */}
-              <div className="absolute inset-0 opacity-10 pointer-events-none">
-                <div className="absolute -top-12 -left-12 w-32 h-32 bg-blue-500 rounded-full blur-2xl"></div>
-              </div>
-
-              {/* Header */}
-              <div className="flex items-center space-x-2.5 mb-4 border-b border-white/5 pb-3">
-                <div className="p-2 bg-blue-500/10 rounded-xl border border-blue-500/20">
-                  <Cpu className="w-5 h-5 text-blue-400" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-white font-sans">
-                    Zero-Friction Intelligent Auto-Healer
-                  </h3>
-                  <span className="text-[10px] text-slate-400 font-mono">
-                    pdf2zh 智能运行时诊断自演进闭环
-                  </span>
-                </div>
-              </div>
-
-              {/* Logs Checklist */}
-              <div className="space-y-3 mb-5">
-                {diagnosticsLogs.map((log, idx) => (
-                  <div key={idx} className="flex items-start space-x-3 bg-white/5 p-3 rounded-xl border border-white/5">
-                    {log.status === "success" && (
-                      <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                    )}
-                    {log.status === "running" && (
-                      <div className="w-3.5 h-3.5 rounded-full border-2 border-blue-500 border-t-transparent animate-spin shrink-0 mt-0.5"></div>
-                    )}
-                    {log.status === "pending" && (
-                      <div className="w-1.5 h-1.5 rounded-full bg-slate-600 shrink-0 mt-2 mx-1"></div>
-                    )}
-                    {log.status === "failed" && (
-                      <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
-                    )}
-
-                    <div className="overflow-hidden">
-                      <span className="text-[11px] font-semibold text-slate-200 block uppercase font-mono tracking-wider">
-                        {log.step}
-                      </span>
-                      <p className="text-[10px] text-slate-400 mt-0.5 leading-relaxed font-sans">
-                        {log.detail}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Fix Operations Terminal Output or status details */}
-              {diagnosticsFixStatus !== "idle" && (
-                <div className="bg-black/60 p-3 rounded-xl border border-white/5 mb-5 text-[10px] font-mono leading-relaxed space-y-1">
-                  {diagnosticsFixStatus === "running" && (
-                    <>
-                      <div className="text-blue-400 flex items-center justify-between">
-                        <span>[HEAL] Checking symlinks overrides...</span>
-                        <span className="animate-pulse">RUNNING</span>
-                      </div>
-                      <div className="text-slate-500">[HEAL] Found 0 path pollution. Restoring rapidocr model files.</div>
-                    </>
-                  )}
-                  {diagnosticsFixStatus === "success" && (
-                    <div className="text-emerald-400">[SUCCESS] Self-healed completed! Portability structure status 100% stable. Ready.</div>
-                  )}
-                </div>
-              )}
-
-              {/* Action Buttons */}
-              <div className="flex space-x-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setDiagnosticsFixStatus("running");
-                    setTimeout(() => {
-                      setDiagnosticsLogs(prev => prev.map(item => ({ ...item, status: "success", detail: item.detail.replace("Verify", "Verified") })));
-                      setDiagnosticsFixStatus("success");
-                    }, 1400);
-                  }}
-                  disabled={diagnosticsFixStatus === "running" || diagnosticsFixStatus === "success"}
-                  className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-2.5 text-xs tracking-wider uppercase rounded-xl shadow-lg shadow-blue-900/20 transition disabled:opacity-40 select-none cursor-pointer"
-                >
-                  {diagnosticsFixStatus === "running" ? "Autofix repairing..." : diagnosticsFixStatus === "success" ? "All Healed! / 诊断就绪" : "一键静默自动修复诊断故障"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowDiagnostics(false);
-                    setDiagnosticsFixStatus("idle");
-                  }}
-                  className="px-4 border border-white/10 hover:border-white/25 hover:bg-white/5 rounded-xl transition text-[11px] font-semibold text-slate-300 hover:text-white select-none cursor-pointer"
-                >
-                  Close
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      
     </div>
   );
 }
