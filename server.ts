@@ -1154,17 +1154,38 @@ sys.exit(0)`;
   }
 
 
-  // Fallback to global pdf2zh if venv doesn't exist just in case they installed it globally
-  let commandToRun = fs.existsSync(pdf2zhCmdLocal) ? pdf2zhCmdLocal : "pdf2zh";
-  let executionArgs = [...args];
+  // Write wrapper script to fix PDFPageInterpreterEx 'scs' bug
+  const wrapperCode = `
+import sys
 
-  if (!isWin && fs.existsSync(pdf2zhCmdLocal)) {
-     commandToRun = runtime.pythonCmd;
-     executionArgs.unshift(pdf2zhCmdLocal);
-  } else if (runtime.useModuleMode && runtime.isEmbedded) {
-     commandToRun = runtime.pythonCmd;
-     executionArgs.unshift("-m", "pdf2zh");
-  }
+def patch_pdfinterp():
+    try:
+        import pdf2zh.pdfinterp
+        original_do_SCN = getattr(pdf2zh.pdfinterp.PDFPageInterpreterEx, 'do_SCN', None)
+        if original_do_SCN:
+            def patched_do_SCN(self, *args, **kwargs):
+                if not hasattr(self, 'scs'):
+                    self.scs = getattr(self, 'cs', None)
+                if not hasattr(self, 'ncs'):
+                    self.ncs = getattr(self, 'cs', None)
+                if not hasattr(self, 'cs'):
+                    self.cs = None
+                return original_do_SCN(self, *args, **kwargs)
+            pdf2zh.pdfinterp.PDFPageInterpreterEx.do_SCN = patched_do_SCN
+    except Exception as e:
+        pass
+
+if __name__ == "__main__":
+    patch_pdfinterp()
+    import pdf2zh.pdf2zh
+    sys.exit(pdf2zh.pdf2zh.main())
+`;
+  const wrapperPath = path.join(pdf2zhDataDir, "run_wrapper.py");
+  fs.writeFileSync(wrapperPath, wrapperCode, { encoding: "utf-8" });
+
+  let commandToRun = runtime.pythonCmd;
+  let executionArgs = [wrapperPath, ...args];
+
 
   sendLog("info", `Executing command: ${commandToRun} ${executionArgs.join(" ")}`);
   sendLog("info", "Working directory: " + pdf2zhDataDir);
