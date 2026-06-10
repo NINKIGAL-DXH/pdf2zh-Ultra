@@ -247,6 +247,16 @@ export default function App() {
 
   const exportHighFidelityPDF = async (doc: TranslatedDoc) => {
     if (isExportingPDF) return;
+    
+    // Auto-fallback to native generated file download
+    if (doc.nativeDownloadUrls) {
+       const url = doc.nativeDownloadUrls.dual || doc.nativeDownloadUrls.mono;
+       if (url) {
+          window.open(url, '_blank');
+          return;
+       }
+    }
+    
     setIsExportingPDF(true);
     
     const pushLog = (txt: string) => {
@@ -792,8 +802,10 @@ export default function App() {
                           };
                           setActiveTranslatingDoc(dummyDoc);
                           
-                          // Don't save to history for native since history depends on our block-schema rendering, 
-                          // native yields final PDFs directly.
+                          // Save dummyDoc to the archives so users can re-download native files later
+                          const updatedHist = [dummyDoc, ...history];
+                          setHistory(updatedHist);
+                          saveHistoryToLocalStorage(updatedHist);
                        }
                     }
                   } catch(e) {}
@@ -2643,7 +2655,13 @@ export default function App() {
                       {history.map((doc) => (
                         <div
                           key={doc.id}
-                          onClick={() => setActiveReaderDoc(doc)}
+                          onClick={() => {
+                            if (!doc.pages || doc.pages.length === 0) {
+                              exportHighFidelityPDF(doc);
+                            } else {
+                              setActiveReaderDoc(doc);
+                            }
+                          }}
                           className="bg-white/5 border border-white/10 hover:border-blue-500 p-5 rounded-xl transition cursor-pointer flex flex-col justify-between hover:shadow-2xl relative overflow-hidden flex-shrink-0"
                         >
                           <div className="flex items-start justify-between">

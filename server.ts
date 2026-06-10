@@ -1210,15 +1210,33 @@ sys.exit(0)`;
       // Attempt to resolve generated output files:
       // pdf2zh defaults output names based on original file, let's verify what's outputted
       const parsedPath = path.parse(filePath);
-      const monoPath = path.join(pdf2zhDataDir, "uploads", `${parsedPath.name}-mono.pdf`);
-      const dualPath = path.join(pdf2zhDataDir, "uploads", `${parsedPath.name}-dual.pdf`);
+      const outputDir = path.join(pdf2zhDataDir, "uploads");
+      let monoUrl: string | null = null;
+      let dualUrl: string | null = null;
+      
+      try {
+        if (fs.existsSync(outputDir)) {
+           const dirFiles = fs.readdirSync(outputDir);
+           for (const f of dirFiles) {
+              if (f.startsWith(parsedPath.name) && f.endsWith(".pdf") && f !== parsedPath.base) {
+                 if (f.includes("-dual")) {
+                    dualUrl = `/api/pdf2zh-download/${encodeURIComponent(f)}`;
+                 } else {
+                    monoUrl = `/api/pdf2zh-download/${encodeURIComponent(f)}`;
+                 }
+              }
+           }
+        }
+      } catch (e) {
+         console.error("Failed to read output dir:", e);
+      }
       
       res.write(`data: ${JSON.stringify({ 
         type: "done", 
         message: "Success",
         files: {
-          mono: fs.existsSync(monoPath) ? `/api/pdf2zh-download/${path.basename(monoPath)}` : null,
-          dual: fs.existsSync(dualPath) ? `/api/pdf2zh-download/${path.basename(dualPath)}` : null
+          mono: monoUrl,
+          dual: dualUrl
         }
       })}\n\n`);
     }
