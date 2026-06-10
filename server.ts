@@ -1084,6 +1084,10 @@ app.post("/api/pdf2zh-translate", upload.single("file"), async (req, res) => {
   // Construct arguments based on pdf2zh documentation
   const args = [filePath];
   
+  const outputDir = path.join(pdf2zhDataDir, "uploads");
+  if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
+  args.push("-o"); args.push(outputDir);
+  
   if (sourceLang) { args.push("-li"); args.push(sourceLang === "English" ? "en" : sourceLang); }
   if (targetLang) { args.push("-lo"); args.push(targetLang === "Chinese (Simplified)" ? "zh" : targetLang); }
   

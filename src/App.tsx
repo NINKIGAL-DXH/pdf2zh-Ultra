@@ -252,7 +252,14 @@ export default function App() {
     if (doc.nativeDownloadUrls) {
        const url = doc.nativeDownloadUrls.dual || doc.nativeDownloadUrls.mono;
        if (url) {
-          window.open(url, '_blank');
+          const a = document.createElement('a');
+          a.style.display = 'none';
+          a.href = url;
+          // The download attribute ensures it downloads rather than trying to open in the iframe
+          a.download = doc.fileName ? doc.fileName.replace('.pdf', '-translated.pdf') : 'translated.pdf';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
           return;
        }
     }
@@ -789,9 +796,9 @@ export default function App() {
                           // Convert the native output into our schema temporarily so we can download it.
                           const dummyDoc: TranslatedDoc = {
                             id: "doc_native_" + Date.now(),
-                            fileName: selectedFile?.name || "translated",
-                            fileSize: selectedFile?.size || "0 KB",
-                            pageCount: selectedFile?.pageCount || 1,
+                            fileName: selectedFile?.name || "translated.pdf",
+                            fileSize: selectedFile?.size ? `${(selectedFile.size / 1024 / 1024).toFixed(2)} MB` : "Unknown",
+                            pageCount: 1,
                             translatedAt: new Date().toLocaleString(),
                             params: { ...params },
                             providerConfig: { provider: prov.provider, model: prov.model },
@@ -803,9 +810,12 @@ export default function App() {
                           setActiveTranslatingDoc(dummyDoc);
                           
                           // Save dummyDoc to the archives so users can re-download native files later
-                          const updatedHist = [dummyDoc, ...history];
-                          setHistory(updatedHist);
-                          saveHistoryToLocalStorage(updatedHist);
+                          // Using a callback to get the freshest state value, avoiding stale closures inside the loop
+                          setHistory(prev => {
+                             const updatedHist = [dummyDoc, ...prev];
+                             saveHistoryToLocalStorage(updatedHist);
+                             return updatedHist;
+                          });
                        }
                     }
                   } catch(e) {}
