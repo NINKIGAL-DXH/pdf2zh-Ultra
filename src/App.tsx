@@ -2801,8 +2801,8 @@ FLAGS EXPLAINED:
                              <div className="w-1.5 h-1.5 rounded-full bg-purple-500 mr-2"></div>
                              Open Source DNA
                            </h4>
-                           <a href="https://github.com/Byaidu/pdf2zh" target="_blank" rel="noreferrer" className="text-lg font-bold text-white tracking-wide hover:text-purple-300 transition-colors inline-block decoration-purple-500/30 underline underline-offset-4">
-                             Byaidu / pdf2zh
+                           <a href="https://github.com/PDFMathTranslate/PDFMathTranslate" target="_blank" rel="noreferrer" className="text-lg font-bold text-white tracking-wide hover:text-purple-300 transition-colors inline-block decoration-purple-500/30 underline underline-offset-4">
+                             PDFMathTranslate
                            </a>
                            <p className="text-[10px] text-slate-400 leading-snug">
                              Adapted and propelled by the extraordinary open-source layout-parser Python package. 
@@ -2818,7 +2818,7 @@ FLAGS EXPLAINED:
                            <span className="w-1 h-1 rounded-full bg-slate-700"></span>
                            <span>Powered by AI</span>
                         </div>
-                        <a href="https://github.com/Byaidu/pdf2zh" target="_blank" rel="noreferrer" className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-lg flex items-center transition-colors">
+                        <a href="https://github.com/NINKIGAL-DXH/pdf2zh-Ultra" target="_blank" rel="noreferrer" className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-lg flex items-center transition-colors">
                            <ExternalLink className="w-3.5 h-3.5 mr-2" />
                            View Original Source Code
                         </a>
