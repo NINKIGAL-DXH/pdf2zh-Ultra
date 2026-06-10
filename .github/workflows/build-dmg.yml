@@ -1,0 +1,77 @@
+name: Build macOS DMG
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  build:
+    name: Build macOS DMG Packaging
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install Dependencies
+        run: |
+          npm ci || npm install
+
+      - name: Compile Layout Configuration & Express Server
+        run: |
+          npm run build
+
+      - name: Pre-Fetch & Integrate Standalone Portable Python 3.12 Runtime
+        run: |
+          mkdir -p runtime
+          echo "Fetching secure portable built stand-alone python..."
+          ARCH=$(uname -m)
+          if [ "$ARCH" = "x86_64" ]; then
+            PY_URL="https://github.com/indygreg/python-build-standalone/releases/download/20240415/cpython-3.12.3%2B20240415-x86_64-apple-darwin-install_only.tar.gz"
+          else
+            PY_URL="https://github.com/indygreg/python-build-standalone/releases/download/20240415/cpython-3.12.3%2B20240415-aarch64-apple-darwin-install_only.tar.gz"
+          fi
+          curl -L -o python.tar.gz "$PY_URL"
+          tar -xzf python.tar.gz -C runtime --strip-components=1
+          
+          echo "Pre-installing pdf2zh and scientific wheels offline into built-in package to guarantee zero network dependency..."
+          ./runtime/bin/python3 -m pip install --upgrade pip
+          ./runtime/bin/python3 -m pip install "urllib3<2" certifi "pymupdf==1.24.11" "spacy<3.8.0" "rapidocr-onnxruntime" pdf2zh
+          
+          echo "Cleaning bytecode caches & broken symlinks to minimize delivery payload and fix Gatekeeper codesign issues..."
+          find runtime -type d -name "__pycache__" -exec rm -rf {} +
+          find runtime -type l ! -exec test -e {} \; -delete
+          echo "Removing quarantine attributes and existing signatures from embedded python binaries to prevent Gatekeeper corruption..."
+          find runtime -type f -exec xattr -c {} \; || true
+          find runtime -type f \( -name "*.dylib" -o -name "*.so" -o -name "python3*" -o -executable \) -exec codesign --remove-signature {} \; 2>/dev/null || true
+          rm python.tar.gz
+
+      - name: Install macOS Desktop Packager
+        run: |
+          npm install --save-dev electron electron-builder
+
+      - name: Compile and Package macOS DMG
+        run: |
+          ARCH=$(uname -m)
+          if [ "$ARCH" = "x86_64" ]; then
+             npx electron-builder build --mac dmg --x64 --publish never
+          else
+             npx electron-builder build --mac dmg --arm64 --publish never
+          fi
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+
+      - name: Compress and Upload DMG Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: PDF2ZH-Translation-GUI-macOS-DMG
+          path: dist-desktop/*.dmg
