@@ -1103,12 +1103,27 @@ app.post("/api/pdf2zh-translate", upload.single("file"), async (req, res) => {
      }
   }
   
-  const envVars: any = { ...process.env, PYTHONWARNINGS: "ignore", HF_ENDPOINT: "https://hf-mirror.com", HF_HUB_ENABLE_HF_TRANSFER: "0" };
+  const envVars: any = { 
+     ...process.env, 
+     PYTHONWARNINGS: "ignore", 
+     HF_ENDPOINT: "https://hf-mirror.com", 
+     HF_HUB_ENABLE_HF_TRANSFER: "0",
+     NO_PROXY: "*",
+     HTTP_PROXY: "",
+     HTTPS_PROXY: "",
+     ALL_PROXY: "",
+     http_proxy: "",
+     https_proxy: "",
+     all_proxy: "",
+     OPENAI_TIMEOUT: "180.0", // Fail fast after 3 minutes instead of hanging for 18 minutes
+     OPENAI_MAX_RETRIES: "3"
+  };
   if (model) {
      envVars.OPENAI_MODEL = model;
   }
   if (endpoint) {
      envVars.OPENAI_BASE_URL = endpoint.endsWith("/chat/completions") ? endpoint.replace("/chat/completions", "") : endpoint;
+     envVars.OPENAI_API_BASE = envVars.OPENAI_BASE_URL; // Forward compatibility for older openai python sdk
   }
   if (apiKey) {
      envVars.OPENAI_API_KEY = apiKey;
